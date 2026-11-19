@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anscombe's Quartet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Layout idea: the identical statistics on top, the four very different pictures below. Course palette: navy ink, coral accent, cool white. */
+  --ink: #1B2A41;
+  --ink-2: #4A5568;
+  --ink-3: #6B7588;
+  --page: #F3F5F8;
+  --card: #FFFFFF;
+  --line: #DDE2E9;
+  --accent: #E4572E;
+  --accent-tint: #FCE9E3;
+  --gray: #A7B0BD;
+  --font-display: "Source Serif 4", Cambria, Georgia, serif;
+  --font-body: "Source Sans 3", Calibri, "Segoe UI", Arial, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--page); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.45; }
+.wrap { max-width: 1440px; margin: 0 auto; padding: 24px clamp(16px, 3vw, 36px) 40px; display: grid; gap: 20px; }
+header { display: grid; gap: 6px; }
+.kicker { font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--font-display); font-size: clamp(26px, 3vw, 36px); line-height: 1.15; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--ink-2); max-width: 75ch; }
+kbd { font-family: var(--font-body); font-size: 13px; font-weight: 700; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--card); }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn { font: inherit; font-size: 15px; font-weight: 600; padding: 9px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
+.btn:hover { border-color: #B9C2CF; }
+.btn.primary { background: var(--ink); color: #FFFFFF; border-color: var(--ink); }
+.btn[aria-pressed="true"] { background: var(--ink); color: #FFFFFF; border-color: var(--ink); }
+.btn:focus-visible, svg:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+.stats { padding: 18px 20px; display: grid; gap: 10px; }
+.stats h2, .panel h2 { margin: 0; font-family: var(--font-display); font-size: 22px; line-height: 1.2; }
+.stats p { margin: 0; color: var(--ink-2); }
+.table-scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-variant-numeric: tabular-nums; font-size: 17px; }
+th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--line); }
+th:first-child, td:first-child { text-align: left; }
+thead th { font-size: 14px; color: var(--ink-3); font-weight: 600; }
+td.changed { color: var(--accent); font-weight: 700; }
+
+.grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+.panel { padding: 16px 16px 14px; display: grid; gap: 8px; align-content: start; position: relative; }
+.panel .story { margin: 0; font-size: 16px; color: var(--ink-2); min-height: 48px; }
+.panel .story b { color: var(--ink); }
+.panel svg { width: 100%; height: auto; display: block; }
+.panel .btn { font-size: 14px; padding: 7px 10px; justify-self: start; }
+.panel .btn[disabled] { visibility: hidden; }
+
+.hidden-plots .panel svg, .hidden-plots .panel .story, .hidden-plots .panel .btn { visibility: hidden; }
+.hidden-plots .panel::after {
+  content: "?"; position: absolute; inset: 48px 16px 16px; display: grid; place-items: center;
+  font-family: var(--font-display); font-size: 96px; color: var(--line); border: 2px dashed var(--line); border-radius: 12px;
+}
+.tip { position: absolute; pointer-events: none; background: #FFFFFF; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 14px; font-variant-numeric: tabular-nums; box-shadow: 0 6px 18px rgba(27,42,65,.14); display: none; z-index: 2; }
+
+.takeaway { padding: 16px 20px; background: var(--accent-tint); border-color: #F6CDBF; font-size: 18px; }
+.takeaway b { color: var(--accent); }
+.source { margin: 0; font-size: 13px; color: var(--ink-3); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Slide 19 · Anscombe's quartet</div>
+    <h1>Same statistics, four different stories</h1>
+    <p class="lede">In 1973 Francis Anscombe built four datasets with almost identical averages, spread, correlation and trend line. Read the numbers first, then look at the pictures. Press <kbd>Q</kbd> for quiz mode (hide the plots), <kbd>Space</kbd> to reveal them, <kbd>R</kbd> to remove the odd points.</p>
+    <div class="toolbar">
+      <button class="btn" id="quizBtn" type="button" aria-pressed="false">Quiz mode: hide the plots</button>
+      <button class="btn primary" id="revealBtn" type="button">Plot the data</button>
+      <button class="btn" id="lineBtn" type="button" aria-pressed="true">Trend line: on</button>
+      <button class="btn" id="outlierBtn" type="button" aria-pressed="false">Remove the odd point in III and IV</button>
+    </div>
+  </header>
+
+  <section class="card stats" aria-labelledby="statsTitle">
+    <h2 id="statsTitle">The numbers say these four datasets are the same</h2>
+    <p>Computed live from the 11 points in each dataset. Values that change when you remove a point turn coral.</p>
+    <div class="table-scroll"><table id="statsTable"></table></div>
+  </section>
+
+  <section class="grid" id="grid" aria-label="Scatter plots of the four datasets"></section>
+
+  <section class="card takeaway">
+    <b>The lesson:</b> summary statistics, and AI summaries built on them, can hide the shape of your data. Always plot it before you present it.
+  </section>
+  <p class="source">Source: F. J. Anscombe, "Graphs in Statistical Analysis," <i>The American Statistician</i> 27, no. 1 (1973). Real data, 11 points per dataset.</p>
+</div>
+
+<script>
+(() => {
+  const X = [10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5];
+  const SETS = [
+    { id: "I", x: X, y: [8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68],
+      story: "<b>A normal, noisy trend.</b> This is what the numbers lead you to picture." },
+    { id: "II", x: X, y: [9.14, 8.14, 8.74, 8.77, 9.26, 8.10, 6.13, 3.10, 9.13, 7.26, 4.74],
+      story: "<b>A smooth curve, not a line.</b> A straight trend line is the wrong model." },
+    { id: "III", x: X, y: [7.46, 6.77, 12.74, 7.11, 7.81, 8.84, 6.08, 5.39, 8.15, 6.42, 5.73], odd: 2,
+      story: "<b>A perfect line plus one outlier.</b> One point drags the trend off course." },
+    { id: "IV", x: [8, 8, 8, 8, 8, 8, 8, 19, 8, 8, 8], y: [6.58, 5.76, 7.71, 8.84, 8.47, 7.04, 5.25, 12.50, 5.56, 7.91, 6.89], odd: 7,
+      story: "<b>No relationship at all.</b> One far-off point creates the whole correlation." }
+  ];
+  const state = { quiz: false, line: true, dropOdd: false };
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (parent) parent.appendChild(n); return n; };
+  const $ = id => document.getElementById(id);
+
+  function stats(xs, ys) {
+    const n = xs.length, mean = a => a.reduce((s, v) => s + v, 0) / a.length;
+    const mx = mean(xs), my = mean(ys);
+    let sxx = 0, syy = 0, sxy = 0;
+    for (let i = 0; i < n; i++) { sxx += (xs[i] - mx) ** 2; syy += (ys[i] - my) ** 2; sxy += (xs[i] - mx) * (ys[i] - my); }
+    const slope = sxx ? sxy / sxx : NaN;
+    const r = sxx && syy ? sxy / Math.sqrt(sxx * syy) : NaN;
+    return { n, mx, my, vx: sxx / (n - 1), vy: syy / (n - 1), r, slope, intercept: my - slope * mx };
+  }
+  function points(s) {
+    const keep = (_, i) => !(state.dropOdd && s.odd === i);
+    return { xs: s.x.filter(keep), ys: s.y.filter(keep) };
+  }
+
+  const ROWS = [
+    ["Number of points", st => String(st.n)],
+    ["Average of x", st => st.mx.toFixed(2)],
+    ["Average of y", st => st.my.toFixed(2)],
+    ["Spread of x (variance)", st => st.vx.toFixed(2)],
+    ["Spread of y (variance)", st => st.vy.toFixed(2)],
+    ["Correlation (r)", st => isNaN(st.r) ? "none (x never changes)" : st.r.toFixed(2)],
+    ["Trend line", st => isNaN(st.slope) ? "none (x never changes)" : `y = ${st.intercept.toFixed(2)} + ${st.slope.toFixed(2)}x`]
+  ];
+
+  function renderTable() {
+    const t = $("statsTable"); t.replaceChildren();
+    const hr = t.createTHead().insertRow();
+    ["", ...SETS.map(s => "Dataset " + s.id)].forEach(h => { const th = document.createElement("th"); th.textContent = h; hr.appendChild(th); });
+    const body = t.createTBody();
+    const base = SETS.map(s => stats(s.x, s.y));
+    const now = SETS.map(s => { const p = points(s); return stats(p.xs, p.ys); });
+    ROWS.forEach(([label, f]) => {
+      const r = body.insertRow();
+      const c0 = r.insertCell(); c0.textContent = label;
+      now.forEach((st, k) => { const c = r.insertCell(); c.textContent = f(st); if (f(st) !== f(base[k])) c.className = "changed"; });
+    });
+  }
+
+  function buildPanels() {
+    const grid = $("grid");
+    SETS.forEach(s => {
+      const card = document.createElement("article"); card.className = "card panel"; card.id = "panel-" + s.id;
+      const h = document.createElement("h2"); h.textContent = "Dataset " + s.id;
+      const story = document.createElement("p"); story.className = "story"; story.innerHTML = s.story; // fixed copy written above, not data
+      const svg = el("svg", { role: "img", "aria-label": `Scatter plot of Anscombe dataset ${s.id}`, tabindex: "0" });
+      const tip = document.createElement("div"); tip.className = "tip";
+      card.append(h, story, svg, tip);
+      grid.appendChild(card);
+    });
+  }
+
+  function drawPanel(s) {
+    const card = $("panel-" + s.id), svg = card.querySelector("svg"), tip = card.querySelector(".tip");
+    const W = 320, H = 280, m = { t: 10, r: 12, b: 34, l: 34 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const x = v => m.l + (v - 2) / 18 * iw, y = v => m.t + ih - (v - 2) / 12 * ih;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.replaceChildren();
+    for (let v = 4; v <= 14; v += 2) {
+      el("line", { x1: m.l, x2: m.l + iw, y1: y(v), y2: y(v), stroke: "#E6E9EF" }, svg);
+      const t = el("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end", fill: "#4A5568", "font-size": 12, "font-family": "Source Sans 3, Calibri, sans-serif" }, svg); t.textContent = v;
+    }
+    el("line", { x1: m.l, x2: m.l + iw, y1: m.t + ih, y2: m.t + ih, stroke: "#BFC5CF" }, svg);
+    for (let v = 4; v <= 20; v += 4) {
+      const t = el("text", { x: x(v), y: m.t + ih + 18, "text-anchor": "middle", fill: "#4A5568", "font-size": 12, "font-family": "Source Sans 3, Calibri, sans-serif" }, svg); t.textContent = v;
+    }
+    const lab = el("text", { x: m.l + iw, y: H - 2, "text-anchor": "end", fill: "#6B7588", "font-size": 12, "font-family": "Source Sans 3, Calibri, sans-serif" }, svg); lab.textContent = "x";
+    const p = points(s), st = stats(p.xs, p.ys);
+    if (state.line && !isNaN(st.slope)) {
+      el("line", { x1: x(3), y1: y(st.intercept + st.slope * 3), x2: x(20), y2: y(st.intercept + st.slope * 20), stroke: "#A7B0BD", "stroke-width": 2, "stroke-dasharray": "6 4" }, svg);
+    }
+    s.x.forEach((xv, i) => {
+      const removed = state.dropOdd && s.odd === i;
+      const isOdd = s.odd === i;
+      const c = el("circle", { cx: x(xv), cy: y(s.y[i]), r: 6, fill: removed ? "none" : "#E4572E", stroke: removed ? "#A7B0BD" : "#FFFFFF", "stroke-width": 2, "stroke-dasharray": removed ? "3 2" : "" }, svg);
+      const hit = el("circle", { cx: x(xv), cy: y(s.y[i]), r: 14, fill: "transparent" }, svg);
+      hit.addEventListener("pointerenter", () => {
+        tip.textContent = `x = ${xv}, y = ${s.y[i]}${isOdd ? (removed ? " (removed)" : " (the odd point)") : ""}`;
+        tip.style.display = "block";
+        const sc = svg.clientWidth / W;
+        tip.style.left = Math.min(svg.clientWidth - 150, x(xv) * sc + 22) + "px";
+        tip.style.top = (y(s.y[i]) * sc + 40) + "px";
+      });
+      hit.addEventListener("pointerleave", () => { tip.style.display = "none"; });
+    });
+  }
+
+  function render() {
+    renderTable();
+    SETS.forEach(drawPanel);
+    $("grid").classList.toggle("hidden-plots", state.quiz);
+    $("quizBtn").setAttribute("aria-pressed", String(state.quiz));
+    $("lineBtn").setAttribute("aria-pressed", String(state.line));
+    $("lineBtn").textContent = "Trend line: " + (state.line ? "on" : "off");
+    $("outlierBtn").setAttribute("aria-pressed", String(state.dropOdd));
+    $("outlierBtn").textContent = state.dropOdd ? "Put the odd points back" : "Remove the odd point in III and IV";
+    $("statsTitle").textContent = state.dropOdd
+      ? "Remove one point each, and Datasets III and IV stop matching"
+      : "The numbers say these four datasets are the same";
+  }
+
+  buildPanels();
+  $("quizBtn").addEventListener("click", () => { state.quiz = !state.quiz; render(); });
+  $("revealBtn").addEventListener("click", () => { state.quiz = false; render(); });
+  $("lineBtn").addEventListener("click", () => { state.line = !state.line; render(); });
+  $("outlierBtn").addEventListener("click", () => { state.dropOdd = !state.dropOdd; render(); });
+  document.addEventListener("keydown", e => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = e.key.toLowerCase();
+    if (k === "q") { state.quiz = true; render(); }
+    else if (k === " " && state.quiz && !(e.target.closest && e.target.closest("button"))) { e.preventDefault(); state.quiz = false; render(); }
+    else if (k === "r") { state.dropOdd = !state.dropOdd; render(); }
+    else if (k === "t") { state.line = !state.line; render(); }
+  });
+  render();
+})();
+</script>
+</body>
+</html>
