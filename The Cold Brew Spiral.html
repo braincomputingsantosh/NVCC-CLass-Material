@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Cold Brew Spiral</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Schibsted+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Layout idea: the data drawn as a cup of coffee seen from above. A 24-month spiral sits in the cup (inner loop 2024, outer loop 2025), a readout beside it, then glasses and a pour bar below. One dark "after-hours café" world. */
+  --bg: #1C130E;
+  --bg-2: #261A13;
+  --cream: #F2E6D8;
+  --muted: #B9A898;
+  --rule: #3A2B22;
+  --hot: #B8662F;
+  --cold: #2F96CC;
+  --food: #C2577F;
+  --tea: #6E9A35;
+  --font-display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --font-body: "Schibsted Grotesk", "Segoe UI", Arial, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--cream); font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1320px; margin: 0 auto; padding: 32px clamp(16px, 3.5vw, 44px) 56px; display: grid; gap: 40px; }
+
+.hero { display: grid; gap: 10px; max-width: 980px; }
+.kicker { font-size: 13px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.kicker b { color: var(--cold); font-weight: 700; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(40px, 6.2vw, 84px); line-height: .98; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+h1 em { color: var(--cold); }
+.lede { margin: 6px 0 0; color: var(--muted); font-size: 18px; max-width: 66ch; }
+
+.stage { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, 1fr); gap: 28px; align-items: start; }
+@media (max-width: 960px) { .stage { grid-template-columns: 1fr; } }
+
+.controls { display: grid; gap: 10px; margin-bottom: 8px; }
+.row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.row .lab { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); width: 72px; }
+.chip { font: inherit; font-size: 14px; font-weight: 500; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--rule); background: transparent; color: var(--cream); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.chip:hover { border-color: #5B4536; }
+.chip[aria-pressed="true"] { background: var(--cream); color: var(--bg); border-color: var(--cream); }
+.chip i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.play { font: inherit; font-weight: 700; font-size: 14px; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--cold); background: var(--cold); color: #0D1B24; cursor: pointer; }
+button:focus-visible, summary:focus-visible { outline: 3px solid var(--cream); outline-offset: 2px; }
+
+.cup { position: relative; }
+.cup svg { width: 100%; height: auto; display: block; }
+.tip { position: absolute; pointer-events: none; display: none; background: var(--cream); color: var(--bg); border-radius: 10px; padding: 8px 12px; font-size: 14px; line-height: 1.35; box-shadow: 0 10px 30px rgba(0,0,0,.4); font-variant-numeric: tabular-nums; z-index: 3; min-width: 170px; }
+.tip b { font-size: 18px; display: block; }
+.tip span { color: #5C4B3E; }
+
+.readout { display: grid; gap: 18px; padding-top: 6px; }
+.readout .what { font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.big { font-family: var(--font-display); font-size: clamp(64px, 7vw, 104px); line-height: .9; font-variant-numeric: tabular-nums; }
+.facts { display: grid; gap: 0; border-top: 1px solid var(--rule); }
+.fact { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
+.fact span { color: var(--muted); }
+.fact b { font-size: 20px; font-variant-numeric: tabular-nums; }
+.insight { font-family: var(--font-display); font-style: italic; font-size: 26px; line-height: 1.2; margin: 0; text-wrap: balance; }
+.how { font-size: 14px; color: var(--muted); margin: 0; }
+
+section.block { display: grid; gap: 14px; border-top: 1px solid var(--rule); padding-top: 28px; }
+section.block h2 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 3.6vw, 46px); line-height: 1.05; margin: 0; text-wrap: balance; }
+section.block h2 em { color: var(--cold); }
+section.block .sub { margin: 0; color: var(--muted); max-width: 70ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 18px; font-size: 14px; color: var(--muted); }
+.legend span { display: inline-flex; gap: 8px; align-items: center; }
+.legend i { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+.glasses svg, .pour svg { width: 100%; height: auto; display: block; overflow: visible; }
+.glasses, .pour { position: relative; }
+
+details.data { color: var(--muted); font-size: 14px; }
+details.data summary { cursor: pointer; font-weight: 700; color: var(--cream); }
+.scroll { overflow-x: auto; margin-top: 10px; }
+table { border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 560px; }
+th, td { padding: 4px 12px; text-align: right; border-bottom: 1px solid var(--rule); }
+th:first-child, td:first-child { text-align: left; }
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--rule); padding-top: 16px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="kicker">Ridgeline Coffee · 24 months · <b>fictional data</b></div>
+    <h1>Every summer, the <em>cold brew</em> spiral grows</h1>
+    <p class="lede">This is a cup of coffee seen from above. The spiral starts at the center in January 2024 and winds outward, one petal per month, to December 2025 at the rim. Each petal's length is that month's revenue. Watch cold brew swell every summer, and reach further in 2025 than in 2024.</p>
+  </header>
+
+  <div class="stage">
+    <div>
+      <div class="controls">
+        <div class="row" role="group" aria-label="Product"><span class="lab">Product</span><span id="products" class="row"></span></div>
+        <div class="row" role="group" aria-label="Café"><span class="lab">Café</span><span id="cafes" class="row"></span></div>
+        <div class="row"><span class="lab"></span><button class="play" id="play" type="button">▶ Pour two years</button></div>
+      </div>
+      <div class="cup" id="cupWrap">
+        <svg id="cup" viewBox="0 0 900 820" role="img" aria-labelledby="cupDesc"><desc id="cupDesc">Spiral chart of monthly revenue, January 2024 at the center to December 2025 at the rim.</desc></svg>
+        <div class="tip" id="tip" role="status"></div>
+      </div>
+    </div>
+
+    <aside class="readout" aria-live="polite">
+      <div>
+        <div class="what" id="what"></div>
+        <div class="big" id="big"></div>
+        <div class="how" id="bigLabel"></div>
+      </div>
+      <div class="facts" id="facts"></div>
+      <p class="insight" id="insight"></p>
+      <p class="how">How to read it: petal length = revenue that month, measured out from the spiral line. The faint inner loop is 2024, the bright outer loop is 2025. Each product and café gets its own scale (see the key in the cup), so compare petals within one view, and use the numbers here to compare across views.</p>
+    </aside>
+  </div>
+
+  <section class="block">
+    <h2>Six cafés, six glasses: Downtown pours the most</h2>
+    <p class="sub">2025 revenue by café, stacked by product. Every glass has straight sides and shares one scale, so the height of each layer is exactly proportional to its revenue. Hover a layer for the number.</p>
+    <div class="legend" id="legend"></div>
+    <div class="glasses" id="glassWrap"><svg id="glasses" viewBox="0 0 1200 520" role="img" aria-label="Stacked glasses showing 2025 revenue by café and product"></svg><div class="tip" id="tip2"></div></div>
+  </section>
+
+  <section class="block">
+    <h2><em>Cold brew</em> is a fifth of sales, but 72% of the growth</h2>
+    <p class="sub">Ridgeline grew by $190K from 2024 to 2025. This pour shows where every extra dollar came from.</p>
+    <div class="pour"><svg id="pour" viewBox="0 0 1200 190" role="img" aria-label="Where 2025 revenue growth came from, by product"></svg></div>
+  </section>
+
+  <details class="data">
+    <summary>Show the monthly numbers (all cafés)</summary>
+    <div class="scroll"><table id="table"></table></div>
+  </details>
+
+  <footer>Fictional teaching data: Ridgeline Coffee, monthly revenue by café and product, 2024–2025 (ridgeline_coffee_monthly_2024_2025_FICTIONAL.csv). Made for the course Presentation &amp; Data Storytelling with AI Tools.</footer>
+</div>
+
+<script>
+(() => {
+  const D = {"Downtown":{"Hot coffee":[34047,30744,31577,29421,28438,26699,28413,30160,30497,32972,31105,35253,34295,29531,31936,29956,30832,29491,29281,30586,31177,34414,32879,34687],"Food":[14560,13542,14619,14374,14754,14589,14175,14216,13937,15758,13542,14623,14701,13560,14957,14072,14520,14124,15203,14901,14228,15225,14997,14705],"Cold brew":[5414,7705,11058,13373,17228,17325,17915,16695,11810,9101,6981,6222,7063,8536,12754,17276,20002,21407,20778,18680,14802,11620,8244,7245],"Tea":[5313,5236,5419,4902,5423,5166,5506,5221,5448,5655,5532,5695,5331,5043,5370,5379,5706,5346,5502,5514,5179,5830,5151,5692]},"Airport":{"Hot coffee":[30849,26945,28677,27426,25912,26235,26861,27633,28121,29418,29960,31745,32387,26418,29718,27028,27235,25254,27359,29117,28330,29792,31606,32327],"Food":[13433,12161,13220,13110,12890,12984,13357,13511,13547,14062,13127,13597,13748,12185,13236,12944,13610,13376,13949,13793,13014,12988,13035,13445],"Cold brew":[5212,6592,10398,13054,14784,15723,16869,14765,11150,8866,6125,5407,6422,7939,12793,15877,18492,19937,20305,18040,14260,10627,7704,6637],"Tea":[4995,4735,5030,5039,4747,4842,4978,5155,5049,4930,4909,5186,5443,4549,5080,4612,4926,4851,5163,5271,4975,5087,4761,5171]},"Riverside":{"Hot coffee":[26162,22387,22954,20973,21926,21088,21926,22796,23283,23395,23899,25103,26183,23427,24460,21821,22013,20865,20795,21382,22977,24600,24278,27361],"Food":[10804,9569,10617,10101,11066,10798,10595,10900,10099,10550,10024,10796,10280,9406,11069,10593,10474,10332,11504,11021,10620,11307,10749,11669],"Cold brew":[4062,5724,8039,10389,12217,12937,13377,11900,8766,6443,4982,4336,5141,6247,9476,11965,14851,16160,15993,14447,11210,8380,6126,5269],"Tea":[3911,3787,3977,3864,4331,3793,4079,4263,3834,4101,3924,4081,3960,3654,4038,4004,4093,3869,4238,4497,3994,4101,3906,4046]},"Campus":{"Hot coffee":[25927,24457,26329,23711,22795,12330,13335,13918,24394,27590,26445,27869,28637,23852,25281,24040,24565,12853,12917,13529,25925,27626,26748,29204],"Food":[11345,10651,11703,11243,11754,6129,6456,6690,11383,11013,11017,11863,11494,10792,12004,12179,11202,6440,6706,6438,11996,11948,11847,12858],"Cold brew":[4409,5890,8595,11121,13908,8159,8078,7278,9742,7197,5596,4838,5715,6779,10494,13384,16562,9751,9811,9055,12812,8871,6479,5902],"Tea":[4353,4104,4374,4342,4377,2316,2399,2452,4215,4425,4166,4451,4607,4083,4579,4550,4659,2358,2409,2560,4422,4688,4596,4672]},"Mall":{"Hot coffee":[21227,19282,18820,17968,18373,18106,19363,18451,19046,20800,21075,21337,20561,19306,19549,18307,19022,17474,18113,18760,19661,21135,20725,21957],"Food":[9420,8410,8922,8670,9514,9055,9059,9150,8671,8981,9116,9020,9360,8146,8986,9010,9377,9103,9193,9349,8832,9412,8825,9436],"Cold brew":[3541,4669,6685,8632,10442,11097,10517,10375,7651,6215,4307,3708,4150,5036,8073,10742,13100,13453,14171,12437,9471,7074,5438,4659],"Tea":[3336,3273,3527,3246,3339,3574,3293,3192,3384,3401,3340,3581,3548,3191,3648,3359,3701,3410,3538,3496,3292,3547,3430,3519]},"Suburb":{"Hot coffee":[18461,16541,17175,16493,17121,15707,16910,16686,16622,17716,18456,18854,19082,17737,17952,16553,17228,15769,17448,17558,16577,18927,17736,19298],"Food":[8342,7181,7766,7875,8169,7572,8224,7468,7641,8326,7727,7933,8383,7667,8018,8202,7520,7879,8325,8322,7995,8372,8172,8271],"Cold brew":[3057,4099,6047,7118,9460,9992,10046,8747,7006,4972,3705,3482,3767,4689,7705,9611,11282,11980,11874,10546,7873,6562,4908,3966],"Tea":[2900,2808,3012,2834,3021,2955,3009,3021,2768,3059,2957,3069,2934,2749,3123,2954,3037,3044,3215,3115,3068,3126,2934,2983]}};
+  const CAFES = ["Downtown", "Airport", "Riverside", "Campus", "Mall", "Suburb"];
+  const PRODUCTS = ["Hot coffee", "Cold brew", "Food", "Tea"];          // validated order for adjacent colors
+  const COLOR = { "Hot coffee": "#B8662F", "Cold brew": "#2F96CC", "Food": "#C2577F", "Tea": "#6E9A35" };
+  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (t, a, p) => { const n = document.createElementNS(NS, t); for (const k in a) n.setAttribute(k, a[k]); if (p) p.appendChild(n); return n; };
+  const $ = id => document.getElementById(id);
+  const money = v => v >= 1e6 ? "$" + (v / 1e6).toFixed(2) + "M" : "$" + Math.round(v / 1000) + "K";
+  const pct = v => (v >= 0 ? "+" : "−") + Math.abs(Math.round(v)) + "%";
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const sum = a => a.reduce((s, v) => s + v, 0);
+
+  function series(product, cafe) {
+    const cafes = cafe === "All cafés" ? CAFES : [cafe];
+    const prods = product === "All products" ? PRODUCTS : [product];
+    return Array.from({ length: 24 }, (_, i) => sum(cafes.flatMap(c => prods.map(p => D[c][p][i]))));
+  }
+  const state = { product: "Cold brew", cafe: "All cafés", grow: 1 };
+
+  // ---------------- the cup ----------------
+  const cup = $("cup"), tip = $("tip"), CX = 410, CY = 410, R0 = 52, GAP = 114, L = 98, HALF = 12.5 * Math.PI / 180;
+  const ang = i => -Math.PI / 2 + ((i % 12) + 0.5) * (Math.PI / 6);
+  const base = i => R0 + GAP * (i + 0.5) / 12;
+  const P = (r, a) => [CX + r * Math.cos(a), CY + r * Math.sin(a)];
+
+  function petal(rIn, rOut, a) {
+    const [x1, y1] = P(rIn, a - HALF), [x2, y2] = P(rOut, a - HALF), [x3, y3] = P(rOut, a + HALF), [x4, y4] = P(rIn, a + HALF);
+    return `M${x1},${y1} L${x2},${y2} A${rOut},${rOut} 0 0 1 ${x3},${y3} L${x4},${y4} A${rIn},${rIn} 0 0 0 ${x1},${y1} Z`;
+  }
+
+  function drawCup() {
+    const s = series(state.product, state.cafe), max = Math.max(...s), color = COLOR[state.product] || "#F2E6D8";
+    cup.querySelectorAll("g.layer").forEach(n => n.remove());
+    const g = el("g", { class: "layer" }, cup);
+    // saucer, handle, cup body, crema
+    const defs = el("defs", {}, g);
+    const rg = el("radialGradient", { id: "crema", cx: "50%", cy: "50%", r: "50%" }, defs);
+    el("stop", { offset: "0%", "stop-color": "#2E2018" }, rg); el("stop", { offset: "85%", "stop-color": "#231810" }, rg); el("stop", { offset: "100%", "stop-color": "#3B2A1E" }, rg);
+    el("circle", { cx: CX, cy: CY, r: 404, fill: "none", stroke: "#3A2B22", "stroke-width": 1 }, g);
+    el("rect", { x: CX + 386, y: CY - 46, width: 96, height: 92, rx: 46, fill: "none", stroke: "#4A372A", "stroke-width": 22 }, g);
+    el("circle", { cx: CX, cy: CY, r: 386, fill: "url(#crema)", stroke: "#4A372A", "stroke-width": 14 }, g);
+    // month labels
+    for (let m = 0; m < 12; m++) {
+      const [x, y] = P(360, ang(m));
+      const t = el("text", { x, y: y + 5, "text-anchor": "middle", fill: "#B9A898", "font-size": 15, "font-family": "Schibsted Grotesk, sans-serif", "letter-spacing": "1" }, g);
+      t.textContent = MONTHS[m].slice(0, 3).toUpperCase();
+    }
+    // spiral guide line
+    let d = ""; for (let k = 0; k <= 240; k++) { const i = k / 10 - 0.5; const a = -Math.PI / 2 + (i + 0.5) * Math.PI / 6; const [x, y] = P(R0 + GAP * (i + 0.5) / 12, a); d += (k ? "L" : "M") + x.toFixed(1) + "," + y.toFixed(1); }
+    el("path", { d, fill: "none", stroke: "#5B4536", "stroke-width": 1.5, "stroke-dasharray": "2 4" }, g);
+    // petals
+    const peak = 12 + s.slice(12).indexOf(Math.max(...s.slice(12)));
+    s.forEach((v, i) => {
+      const shown = Math.max(0, Math.min(1, state.grow * 24 - i));
+      if (shown <= 0) return;
+      const len = (v / max) * L * shown, rIn = base(i), a = ang(i);
+      const p = el("path", { d: petal(rIn, rIn + Math.max(len, 1.5), a), fill: color, "fill-opacity": i < 12 ? 0.5 : 1, stroke: i === peak && state.grow >= 1 ? "#F2E6D8" : "#1C130E", "stroke-width": i === peak && state.grow >= 1 ? 2.5 : 1.5 }, g);
+      p.addEventListener("pointerenter", e => showTip(i, s, e));
+      p.addEventListener("pointermove", e => moveTip(e));
+      p.addEventListener("pointerleave", () => { tip.style.display = "none"; });
+    });
+    // year labels
+    [["2024", 0], ["2025", 12]].forEach(([y, i]) => {
+      const [x, yy] = P(base(i) - 14, -Math.PI / 2 + 0.02);
+      const t = el("text", { x: x - 14, y: yy + 4, "text-anchor": "end", fill: i ? "#F2E6D8" : "#B9A898", "font-size": 14, "font-weight": 700, "font-family": "Schibsted Grotesk, sans-serif" }, g);
+      t.textContent = y;
+    });
+    // center label
+    const c1 = el("text", { x: CX, y: CY - 6, "text-anchor": "middle", fill: "#B9A898", "font-size": 12, "letter-spacing": "2", "font-family": "Schibsted Grotesk, sans-serif" }, g);
+    c1.textContent = "JAN 2024";
+    const c2 = el("text", { x: CX, y: CY + 14, "text-anchor": "middle", fill: "#B9A898", "font-size": 12, "font-family": "Schibsted Grotesk, sans-serif" }, g);
+    c2.textContent = "starts here";
+    // scale key
+    const kx = 14, ky = 800;
+    el("rect", { x: kx, y: ky - 8, width: L, height: 10, rx: 2, fill: color }, g);
+    const kt = el("text", { x: kx + L + 10, y: ky + 2, fill: "#B9A898", "font-size": 14, "font-family": "Schibsted Grotesk, sans-serif" }, g);
+    kt.textContent = "= " + money(max) + " a month";
+    const k2 = el("text", { x: kx, y: ky - 18, fill: "#B9A898", "font-size": 12, "letter-spacing": "1.5", "font-family": "Schibsted Grotesk, sans-serif" }, g);
+    k2.textContent = "SCALE";
+  }
+
+  function showTip(i, s, e) {
+    const y = i < 12 ? 2024 : 2025, m = MONTHS[i % 12];
+    tip.replaceChildren();
+    const b = document.createElement("b"); b.textContent = "$" + s[i].toLocaleString("en-US");
+    const l1 = document.createElement("div"); l1.textContent = `${m} ${y}`;
+    const l2 = document.createElement("span"); l2.textContent = `${state.product} · ${state.cafe}`;
+    tip.append(b, l1, l2);
+    if (i >= 12) { const l3 = document.createElement("div"); l3.textContent = `${pct((s[i] / s[i - 12] - 1) * 100)} vs ${m} 2024`; tip.appendChild(l3); }
+    tip.style.display = "block"; moveTip(e);
+  }
+  function moveTip(e) {
+    const r = $("cupWrap").getBoundingClientRect();
+    let x = e.clientX - r.left + 16, y = e.clientY - r.top + 16;
+    if (x + 190 > r.width) x -= 210;
+    tip.style.left = x + "px"; tip.style.top = y + "px";
+  }
+
+  function readout() {
+    const s = series(state.product, state.cafe), y24 = sum(s.slice(0, 12)), y25 = sum(s.slice(12));
+    const summer = s[17] + s[18] + s[19], winter = s[12] + s[13] + s[23];
+    const peakI = s.slice(12).indexOf(Math.max(...s.slice(12)));
+    const restAvg = (y25 - summer) / 9, sumAvg = summer / 3, sw = (sumAvg / restAvg - 1) * 100;
+    $("what").textContent = `${state.product} · ${state.cafe}`;
+    $("big").textContent = money(y25);
+    $("bigLabel").textContent = "revenue in 2025";
+    const facts = [
+      ["Change from 2024", pct((y25 / y24 - 1) * 100)],
+      ["Best month of 2025", MONTHS[peakI]],
+      ["Summer (Jun–Aug) vs. winter (Dec–Feb)", (summer / winter).toFixed(1) + "×"],
+      ["Summer months vs. the rest of the year", pct(sw)]
+    ];
+    const f = $("facts"); f.replaceChildren();
+    facts.forEach(([k, v]) => { const r = document.createElement("div"); r.className = "fact"; const a = document.createElement("span"); a.textContent = k; const b = document.createElement("b"); b.textContent = v; r.append(a, b); f.appendChild(r); });
+    let msg;
+    if (state.cafe === "Campus") msg = `When students leave, Campus loses about ${Math.round(Math.abs(sw))}% of its ${state.product === "All products" ? "sales" : state.product.toLowerCase() + " sales"} each summer. Look for the notch in both loops.`;
+    else if (state.product === "Cold brew") msg = `Cold brew blooms every summer, and the 2025 bloom is ${pct((y25 / y24 - 1) * 100)} bigger than 2024's.`;
+    else if (sw > 15) msg = `This one peaks in summer, too.`;
+    else msg = `Steady all year: the petals barely change length. That's what a mature product looks like.`;
+    $("insight").textContent = msg;
+  }
+
+  function render() {
+    drawCup(); readout();
+    document.querySelectorAll("#products .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === state.product)));
+    document.querySelectorAll("#cafes .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === state.cafe)));
+  }
+
+  ["Cold brew", "Hot coffee", "Food", "Tea", "All products"].forEach(p => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.v = p;
+    if (COLOR[p]) { const i = document.createElement("i"); i.style.background = COLOR[p]; b.appendChild(i); }
+    b.appendChild(document.createTextNode(p)); b.addEventListener("click", () => { state.product = p; render(); }); $("products").appendChild(b);
+  });
+  ["All cafés", ...CAFES].forEach(c => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.v = c; b.textContent = c;
+    b.addEventListener("click", () => { state.cafe = c; render(); }); $("cafes").appendChild(b);
+  });
+  $("play").addEventListener("click", () => {
+    if (reduce) { state.grow = 1; render(); return; }
+    const start = performance.now(), dur = 4200;
+    const step = now => { state.grow = Math.min(1, (now - start) / dur); drawCup(); if (state.grow < 1) requestAnimationFrame(step); };
+    state.grow = 0; requestAnimationFrame(step);
+  });
+
+  // ---------------- six glasses ----------------
+  function drawGlasses() {
+    const svg = $("glasses"), tip2 = $("tip2");
+    const totals = CAFES.map(c => ({ c, parts: PRODUCTS.map(p => sum(D[c][p].slice(12))) })).map(o => ({ ...o, t: sum(o.parts) })).sort((a, b) => b.t - a.t);
+    const max = totals[0].t, H = 380, top = 70, bottom = top + H, gw = 120, gap = (1200 - 6 * gw) / 7;
+    totals.forEach((o, k) => {
+      const x = gap + k * (gw + gap);
+      const g = el("g", {}, svg);
+      let y = bottom;
+      o.parts.forEach((v, j) => {
+        const h = v / max * H;
+        const r = el("rect", { x: x + 6, y: y - h + 1, width: gw - 12, height: Math.max(0, h - 2), fill: COLOR[PRODUCTS[j]], rx: j === 0 ? 0 : 0 }, g);
+        r.addEventListener("pointerenter", () => {
+          tip2.replaceChildren();
+          const b = document.createElement("b"); b.textContent = "$" + v.toLocaleString("en-US");
+          const d1 = document.createElement("div"); d1.textContent = `${PRODUCTS[j]} at ${o.c}`;
+          const d2 = document.createElement("span"); d2.textContent = `${Math.round(v / o.t * 100)}% of this café's 2025 sales`;
+          tip2.append(b, d1, d2); tip2.style.display = "block";
+          const sc = svg.clientWidth / 1200; tip2.style.left = Math.min(svg.clientWidth - 220, (x + gw + 8) * sc) + "px"; tip2.style.top = ((y - h / 2) * sc) + "px";
+        });
+        r.addEventListener("pointerleave", () => { tip2.style.display = "none"; });
+        y -= h;
+      });
+      // glass outline: straight sides, open top, a little headroom
+      el("path", { d: `M${x},${top - 24} L${x},${bottom + 4} Q${x},${bottom + 14} ${x + 10},${bottom + 14} L${x + gw - 10},${bottom + 14} Q${x + gw},${bottom + 14} ${x + gw},${bottom + 4} L${x + gw},${top - 24}`, fill: "none", stroke: "#8C7766", "stroke-width": 2.5 }, g);
+      const t1 = el("text", { x: x + gw / 2, y: bottom - o.t / max * H - 12, "text-anchor": "middle", fill: "#F2E6D8", "font-size": 22, "font-weight": 700, "font-family": "Schibsted Grotesk, sans-serif" }, g);
+      t1.textContent = money(o.t);
+      const t2 = el("text", { x: x + gw / 2, y: bottom + 44, "text-anchor": "middle", fill: "#F2E6D8", "font-size": 20, "font-family": "Instrument Serif, serif" }, g);
+      t2.textContent = o.c;
+    });
+    const lg = $("legend");
+    PRODUCTS.forEach(p => { const s = document.createElement("span"); const i = document.createElement("i"); i.style.background = COLOR[p]; s.append(i, document.createTextNode(p)); lg.appendChild(s); });
+  }
+
+  // ---------------- the pour ----------------
+  function drawPour() {
+    const svg = $("pour");
+    const parts = PRODUCTS.map(p => ({ p, v: CAFES.reduce((s, c) => s + sum(D[c][p].slice(12)) - sum(D[c][p].slice(0, 12)), 0) })).sort((a, b) => b.v - a.v);
+    const total = sum(parts.map(o => o.v)), W = 1200, y = 40, h = 64;
+    let x = 0;
+    parts.forEach((o, k) => {
+      const w = o.v / total * W;
+      el("rect", { x: x + (k ? 1 : 0), y, width: Math.max(1, w - (k ? 2 : 0)), height: h, fill: COLOR[o.p], rx: k === 0 ? 6 : 0 }, svg);
+      const share = Math.round(o.v / total * 100);
+      const label = `${o.p} · ${money(o.v)} · ${share}%`;
+      if (w > label.length * 12 + 36) {
+        const t = el("text", { x: x + 18, y: y + h / 2 + 8, fill: "#FFFFFF", "font-size": 22, "font-weight": 700, "font-family": "Schibsted Grotesk, sans-serif" }, svg);
+        t.textContent = label;
+      } else {
+        el("line", { x1: x + w / 2, x2: x + w / 2, y1: y + h, y2: y + h + 18 + k * 26 - 26, stroke: "#8C7766" }, svg);
+        const t = el("text", { x: Math.min(x + w / 2, W - 4), y: y + h + 32 + k * 26 - 26, "text-anchor": k === parts.length - 1 ? "end" : "middle", fill: "#F2E6D8", "font-size": 16, "font-family": "Schibsted Grotesk, sans-serif" }, svg);
+        t.textContent = label;
+      }
+      x += w;
+    });
+    const tt = el("text", { x: 0, y: 24, fill: "#B9A898", "font-size": 14, "letter-spacing": "1.5", "font-family": "Schibsted Grotesk, sans-serif" }, svg);
+    tt.textContent = `EVERY EXTRA DOLLAR, 2024 → 2025: ${money(total)} IN TOTAL`;
+  }
+
+  // ---------------- table ----------------
+  function buildTable() {
+    const t = $("table"), hr = t.createTHead().insertRow();
+    ["Month", ...PRODUCTS, "Total"].forEach(h => { const th = document.createElement("th"); th.textContent = h; hr.appendChild(th); });
+    const body = t.createTBody();
+    for (let i = 0; i < 24; i++) {
+      const vals = PRODUCTS.map(p => sum(CAFES.map(c => D[c][p][i])));
+      const r = body.insertRow();
+      [`${MONTHS[i % 12].slice(0, 3)} ${i < 12 ? 2024 : 2025}`, ...vals.map(v => "$" + v.toLocaleString("en-US")), "$" + sum(vals).toLocaleString("en-US")].forEach(v => { const c = r.insertCell(); c.textContent = v; });
+    }
+  }
+
+  render(); drawGlasses(); drawPour(); buildTable();
+})();
+</script>
+</body>
+</html>
